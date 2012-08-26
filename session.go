@@ -59,12 +59,47 @@ func (s *Session) SendObject(obj interface{}) error {
 		log.Println(err)
 		return err
 	}
+	go s.conn.Write(b)
 	_, err = s.conn.Write(b)
 	return err
 }
 
 type msgHeader struct {
 	Msg string
+}
+
+type msgMethod struct {
+	Msg    string
+	Method string
+	Params []json.RawMessage
+	Id     string
+}
+
+type msgMethodAck struct {
+	Msg     string
+	Methods []string
+}
+
+type MeteorError struct {
+	Error  int
+	Reason string
+}
+
+type msgResult struct {
+	Msg    string
+	Id     string
+	Result interface{}
+}
+
+type msgResultError struct {
+	Msg   string
+	Id    string
+	Error MeteorError
+}
+
+type msgError struct {
+	Msg    string
+	Reason string
 }
 
 func (s *Session) process(m RawMessage) {
@@ -81,5 +116,40 @@ func (s *Session) process(m RawMessage) {
 			Msg     string
 			Session string
 		}{"connected", s.uuid})
+	} else if mtype == "method" {
+		var msg msgMethod
+		err := m.Decode(&msg)
+		if err != nil {
+			s.SendObject(msgError{"error", "Malformed method invocation"})
+			return
+		}
+		// This should not happen now, but eh
+		s.SendObject(msgMethodAck{
+			Msg:     "data",
+			Methods: []string{msg.Id},
+		})
+		fn := s.server.GetFunction(msg.Method)
+		if fn == nil {
+			s.SendObject(msgResultError{
+				Msg:   "result",
+				Id:    msg.Id,
+				Error: MeteorError{404, "Method not found"},
+			})
+			return
+		}
+		result, err := Call(fn, msg.Params)
+		if err != nil {
+			s.SendObject(msgResultError{
+				Msg:   "result",
+				Id:    msg.Id,
+				Error: MeteorError{500, err.Error()},
+			})
+			return
+		}
+		s.SendObject(msgResult{
+			Msg:    "result",
+			Id:     msg.Id,
+			Result: result,
+		})
 	}
 }
