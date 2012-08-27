@@ -1,4 +1,4 @@
-package meteor
+package gometeor
 
 import (
 	"encoding/json"

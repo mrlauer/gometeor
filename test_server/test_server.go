@@ -23,7 +23,7 @@ func complicatedFunc(name string, arg complicatedArgs) string {
 }
 
 func startServer() {
-	server := meteor.NewServer()
+	server := gometeor.NewServer()
 	server.Methods(map[string]interface{}{
 		"Greeting": func(arg string) string {
 			return fmt.Sprintf("Hello from Go, %s!", arg)
