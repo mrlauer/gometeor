@@ -69,4 +69,23 @@ func TestCall(t *testing.T) {
 	if str != `There are 3: [a b c]` {
 		t.Errorf("Call result was %T %v", result, result)
 	}
+	fn2 := func(a interface {
+		Foo()
+	},) {
+		a.Foo()
+	}
+	args2 := []json.RawMessage{
+		json.RawMessage(`"An argument"`),
+	}
+	result, err = Call(fn2, args2)
+	if err == nil {
+		t.Errorf("Bad call returned no error")
+	}
+	args2 = []json.RawMessage{
+		json.RawMessage(`null`),
+	}
+	result, err = Call(fn2, args2)
+	if err == nil {
+		t.Errorf("Bad call returned no error")
+	}
 }

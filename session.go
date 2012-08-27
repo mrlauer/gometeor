@@ -107,7 +107,7 @@ func (s *Session) process(m RawMessage) {
 	var header msgHeader
 	err := m.Decode(&header)
 	if err != nil {
-		log.Printf("Error %v decoding &v\n", err, m)
+		log.Printf("Error %v decoding %v\n", err, m)
 		return
 	}
 	mtype := header.Msg

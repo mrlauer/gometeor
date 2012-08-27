@@ -97,7 +97,14 @@ func (m RawMessage) Decode(obj interface{}) error {
 // Call the given function with the given arguments.
 // fn must be a function that returns a single result,
 // and args must be unmarshallable into the argument types of the functions.
-func Call(fn interface{}, args []json.RawMessage) (interface{}, error) {
+func Call(fn interface{}, args []json.RawMessage) (result interface{}, err error) {
+	// It's awfully easy to panic in these situations
+	defer func() {
+		if e := recover(); e != nil {
+			err = errors.New("Error in call")
+		}
+	}()
+
 	fnvalue := reflect.ValueOf(fn)
 	if fnvalue.Kind() != reflect.Func {
 		return nil, errors.New("Non-function passed to call")
