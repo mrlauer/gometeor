@@ -13,12 +13,22 @@ import (
 	"runtime"
 )
 
+type complicatedArgs struct {
+	Age         int
+	Description string
+}
+
+func complicatedFunc(name string, arg complicatedArgs) string {
+	return fmt.Sprintf("Hello %s, age %d, description %s", name, arg.Age, arg.Description)
+}
+
 func startServer() {
 	server := meteor.NewServer()
 	server.Methods(map[string]interface{}{
 		"Greeting": func(arg string) string {
 			return fmt.Sprintf("Hello from Go, %s!", arg)
 		},
+		"Complicated": complicatedFunc,
 	})
 	server.HandleHTTP("/sockjs")
 	addr := "127.0.0.1:3010"

@@ -81,8 +81,8 @@ type msgMethodAck struct {
 }
 
 type MeteorError struct {
-	Error  int
-	Reason string
+	Error  int    `json:"error"`
+	Reason string `json:"reason"`
 }
 
 type msgResult struct {
