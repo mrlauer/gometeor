@@ -2,6 +2,7 @@ package meteor
 
 import (
 	"errors"
+	"fmt"
 	"github.com/mrlauer/gosockjs"
 	"log"
 	"reflect"
@@ -47,21 +48,26 @@ func NewServer() *Server {
 	return s
 }
 
-func (s *Server) RegisterFunction(name string, function interface{}) error {
+func (s *Server) Methods(methods map[string]interface{}) error {
 	s.functionLock.Lock()
 	defer s.functionLock.Unlock()
 
-	if _, ok := s.functions[name]; ok {
-		return errors.New("There is already a function with that name.")
+	for name := range methods {
+		if _, ok := s.functions[name]; ok {
+			return fmt.Errorf("There is already a method named %s\n", name)
+		}
 	}
-	val := reflect.ValueOf(function)
-	if val.Kind() != reflect.Func {
-		return errors.New("Not a function.")
+
+	for name, function := range methods {
+		val := reflect.ValueOf(function)
+		if val.Kind() != reflect.Func {
+			return errors.New("Not a function.")
+		}
+		if val.Type().NumOut() > 1 {
+			return errors.New("Registered functions may return only one result.")
+		}
+		s.functions[name] = function
 	}
-	if val.Type().NumOut() > 1 {
-		return errors.New("Registered functions may return only one result.")
-	}
-	s.functions[name] = function
 	return nil
 }
 
