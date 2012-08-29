@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/mrlauer/meteor"
+	"github.com/mrlauer/gometeor"
 	"log"
 	"net"
 	"net/http"
